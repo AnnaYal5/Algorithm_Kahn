@@ -17,5 +17,27 @@ def generate_graph(i, density):
         
     return adj_list
 
+
+def algorithm_Kahn(i, adj_list):
+    in_degree = {k: 0 for k in range(1, i + 1)} # Словник для зберігання вхідного степеня (кількість ребер, які входять в конкретну вершину) кожної вершини.
+    for n in adj_list:
+        for v in adj_list[n]:
+            in_degree[v] += 1
     
+    queue = [k for k in range(1, i + 1) if in_degree[k] == 0] # Вершини в які не входять ребра, тобто початкові
+    sorted_list = []
+
+    while len(queue) > 0: # Цикл продовжується, поки у нас є вершини, готові до обробки (тобто ті, що не мають необроблених вхідних ребер).
+        n = queue.pop(0)
+        sorted_list.append(n)
+
+        for v in adj_list.get(n, []): # Проходимося по всіх сусідах v вершини n. Це імітує видалення всіх вихідних ребер вершини n.
+            in_degree[v] -= 1
+            if in_degree[v] == 0:
+                queue.append(v)
+        
+    return sorted_list
+
+
+
 
