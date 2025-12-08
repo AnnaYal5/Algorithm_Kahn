@@ -18,7 +18,7 @@ def generate_graph(i, density):
     return adj_list
 
 
-def algorithm_Kahn(i, adj_list):
+def algorithm_Kahn_list(i, adj_list):
     in_degree = {k: 0 for k in range(1, i + 1)} # Словник для зберігання вхідного степеня (кількість ребер, які входять в конкретну вершину) кожної вершини.
     for n in adj_list:
         for v in adj_list[n]:
@@ -39,5 +39,34 @@ def algorithm_Kahn(i, adj_list):
     return sorted_list
 
 
+def algorithm_Kahn_matrix(i, adj_list):
+    matrix = [[0] * i for _ in range(i)] # Створюємо порожню матрицю n x n, заповнену нулями.
+    for n, neighbors in adj_list.items():
+        for v in neighbors:
+            matrix[n - 1][v - 1] = 1
+
+    in_degree = [0] * i # Ініціалізуємо список вхідних степенів (індекси від 0 до n-1).
+    for l in range(i):
+        for k in range(i):
+            in_degree[l] += matrix[k][l]
+    
+    queue = [k + 1 for k in range(i) if in_degree[k] == 0]
+    sorted_list = []
+
+    while len(queue) > 0:
+        n = queue.pop(0)
+        sorted_list.append(n)
+
+        n_index = n - 1
+        for v_index in range(n):
+            if matrix[n_index][v_index] == 1:
+                in_degree[v_index] -= 1
+                if in_degree[v_index] == 0:
+                    queue.append(v_index + 1)
+    
+    return sorted_list
+
+
+    
 
 
