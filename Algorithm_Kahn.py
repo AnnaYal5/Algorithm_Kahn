@@ -2,7 +2,7 @@ import random
 import time
 
 def generate_graph(i, density):
-    adj_list = {k: [] for k in range(i + 1)} # Словник для Списку Суміжності. Кожна вершина (від 1 до n) має порожній список сусідів.
+    adj_list = {k: [] for k in range(1, i + 1)} # Словник для Списку Суміжності. Кожна вершина (від 1 до n) має порожній список сусідів.
     max_edges = i * (i - 1) # Максимально можлива кількість ребер.
     target_edges = int(density * max_edges / 100) # Цільова кількість ребер, необхідна для досягнення заданої щільності (density).
     current_edges = 0
@@ -11,9 +11,9 @@ def generate_graph(i, density):
         k = random.randint(1, i - 1)
         l = random.randint(k + 1, i)
 
-    if l not in adj_list[k]:
-        adj_list[k].append(l)
-        current_edges += 1
+        if l not in adj_list[k]:
+            adj_list[k].append(l)
+            current_edges += 1
         
     return adj_list
 
@@ -57,16 +57,50 @@ def algorithm_Kahn_matrix(i, adj_list):
         n = queue.pop(0)
         sorted_list.append(n)
 
-        n_index = n - 1
-        for v_index in range(n):
-            if matrix[n_index][v_index] == 1:
+        i_index = n - 1
+        for v_index in range(i):
+            if matrix[i_index][v_index] == 1:
                 in_degree[v_index] -= 1
                 if in_degree[v_index] == 0:
                     queue.append(v_index + 1)
     
     return sorted_list
 
+def experiments():
+    Sizes = [20, 40, 60, 80, 100, 120, 140, 160, 180, 200]
+    Densities = [10, 30, 50, 70, 90]
+    Repetitions = 25
 
+    result = []
+
+    algorithms = [("Список суміжності", algorithm_Kahn_list),
+                   ("Матриця суміжності", algorithm_Kahn_matrix)]
     
+    for represent, algorithm_func in algorithms:
+        print(f"\n Експерименти: {represent}")
+
+        for i in Sizes:
+            for density in Densities:
+
+                total_time = 0.0
+                for _ in range(Repetitions):
+                    adj_list = generate_graph(i, density)
+                    start_time = time.time()
+                    algorithm_func(i, adj_list)
+                    end_time = time.time()
+                    total_time += (end_time - start_time) * 1000
+                avg_time = total_time / Repetitions
+
+                result.append({
+                    "Представлення": represent,
+                    "Вершини": i,
+                    "Щільність": density,
+                    "Середній час": avg_time
+                })
+
+                print(f" n={i:<3}, d={density}%: {avg_time:.6f} ms")
+    
+    return result
+
 
 
