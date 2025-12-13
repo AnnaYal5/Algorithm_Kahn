@@ -1,5 +1,7 @@
 import random
 import time
+import matplotlib.pyplot as plt
+import csv
 
 def generate_graph(i, density):
     adj_list = {k: [] for k in range(1, i + 1)} # Словник для Списку Суміжності. Кожна вершина (від 1 до n) має порожній список сусідів.
@@ -101,6 +103,45 @@ def experiments():
                 print(f" n={i:<3}, d={density}%: {avg_time:.6f} ms")
     
     return result
+
+def save_to_csv(results):
+    if not results:
+        print("Немає даних для запису!")
+        return
+
+    with open("results.csv", "w", newline="", encoding="utf-8") as f:
+        writer = csv.DictWriter(
+            f,
+            fieldnames=["Представлення", "Вершини", "Щільність", "Середній час"]
+        )
+        writer.writeheader()
+        for row in results:
+            writer.writerow(row)
+
+def plot_graphs(results):
+    densities = [10, 30, 50, 70, 90]
+
+    for density in densities:
+        plt.figure()
+        for represent in ["Список суміжності", "Матриця суміжності"]:
+            x = []
+            y = []
+            for r in results:
+                if r["Щільність"] == density and r["Представлення"] == represent:
+                    x.append(r["Вершини"])
+                    y.append(r["Середній час"])
+            plt.plot(x, y, label=represent)
+        plt.xlabel("Кількість вершин")
+        plt.ylabel("Час виконання (мс)")
+        plt.title(f"Щільність графу {density}%")
+        plt.legend()
+        plt.grid(True)
+        plt.show()
+
+if __name__ == "__main__":
+    results = experiments()
+    save_to_csv(results)
+    plot_graphs(results)
 
 
 
