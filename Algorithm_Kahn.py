@@ -2,20 +2,19 @@ import random
 import time
 import matplotlib.pyplot as plt
 import csv
+import os
+import sys
+import itertools
 
-def generate_graph(i, density):
-    adj_list = {k: [] for k in range(1, i + 1)} # Словник для Списку Суміжності. Кожна вершина (від 1 до n) має порожній список сусідів.
-    max_edges = i * (i - 1) # Максимально можлива кількість ребер.
-    target_edges = int(density * max_edges / 100) # Цільова кількість ребер, необхідна для досягнення заданої щільності (density).
-    current_edges = 0
-
-    while current_edges < target_edges:
-        k = random.randint(1, i - 1)
-        l = random.randint(k + 1, i)
-
-        if l not in adj_list[k]:
-            adj_list[k].append(l)
-            current_edges += 1
+def generate_graph(n, density):
+    adj_list = {k: [] for k in range(1, n + 1)}
+    max_edges = n * (n - 1) // 2
+    target_edges = int(density * max_edges / 100)
+    possible_edges = list(itertools.combinations(range(1, n + 1), 2))
+    chosen_edges = random.sample(possible_edges, target_edges)
+    
+    for u, v in chosen_edges:
+        adj_list[u].append(v)
         
     return adj_list
 
@@ -108,8 +107,13 @@ def save_to_csv(results):
     if not results:
         print("Немає даних для запису!")
         return
+    
+    script_dir = os.path.dirname(os.path.abspath(sys.argv[0]))
+    csv_file_name = "results.csv"
+    full_path = os.path.join(csv_file_name)
+    print(full_path)
 
-    with open("results.csv", "w", newline="", encoding="utf-8") as f:
+    with open(full_path, "w", newline="", encoding="utf-8") as f:
         writer = csv.DictWriter(
             f,
             fieldnames=["Представлення", "Вершини", "Щільність", "Середній час"]
@@ -120,6 +124,8 @@ def save_to_csv(results):
 
 def plot_graphs(results):
     densities = [10, 30, 50, 70, 90]
+
+    script_dir = os.path.dirname(os.path.abspath(sys.argv[0]))
 
     for density in densities:
         plt.figure()
@@ -136,12 +142,17 @@ def plot_graphs(results):
         plt.title(f"Щільність графу {density}%")
         plt.legend()
         plt.grid(True)
-        plt.show()
+        file_name = f"graph_density_{density}%.png"
+        full_path = os.path.join(script_dir, file_name)
+        plt.savefig(full_path) 
+        plt.close()
+        print(f":white_check_mark: Збережено графік: {full_path}")
+    print(":white_check_mark: Усі графіки та файл CSV збережено!")
 
 if __name__ == "__main__":
     results = experiments()
     save_to_csv(results)
     plot_graphs(results)
-
-
-
+    print("\n--- Зібрані результати (повний список) ---")
+    for r in results:
+        print(f"[{r['Представлення']:<20}] N={r['Вершини']:<4} D={r['Щільність']:<3}%: {r['Середній час']:.6f} ms")
